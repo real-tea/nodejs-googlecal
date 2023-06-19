@@ -31,6 +31,25 @@ fs.readFile('token.json',(err , token)=> {
 function getAccessToken(oAuth2Client){
     const authUrl = oAuth2Client.generateAuthUrl({
         access_type:'offline',
-        scope : [ ]
+        scope :  ['https://www.googleapis.com/auth/calendar.readonly']
+    });
+
+    console.log("authorise this app by visiting : " , authUrl);
+    const readline = require('readline').createInterface({
+        input : process.stdin,
+        output : process.stdout
+    });
+
+    readline.question("enter the code from the page here :",code => {
+        readline.close();
+        oAuth2Client.getToken(code , (err , token)=>{
+            if(err) return console.error('Error retrieving access token', err);
+            oAuth2Client.setCredentials(token);
+            fs.writeFile('token.json', JSON.stringify(token),err=>{
+                if(err) return console.error('Error writing token to file ' , err);
+                console.log('Token strored in token.json');
+                listEvents();
+            })
+        })
     })
 }
